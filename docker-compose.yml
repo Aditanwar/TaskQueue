@@ -1,0 +1,82 @@
+version: '3.8'
+
+services:
+  # Message Broker & Result Backend
+  redis:
+    image: redis:7-alpine
+    container_name: taskqueue_redis
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+    networks:
+      - taskqueue_network
+
+  # FastAPI Web Application & Client UI
+  web:
+    build: .
+    container_name: taskqueue_api
+    command: uvicorn app.main:app --host 0.0.0.0 --port 8000
+    volumes:
+      - ./app:/workspace/app
+    ports:
+      - "8000:8000"
+    environment:
+      - PROJECT_NAME=TaskQueue - Distributed Job Processing
+      - REDIS_URL=redis://redis:6379/0
+      - CELERY_BROKER_URL=redis://redis:6379/0
+      - CELERY_RESULT_BACKEND=redis://redis:6379/0
+      - ENV=production
+    depends_on:
+      redis:
+        condition: service_healthy
+    networks:
+      - taskqueue_network
+
+  # Celery Asynchronous Workers Node
+  worker:
+    build: .
+    container_name: taskqueue_worker
+    command: celery -A app.workers.tasks.celery_app worker --loglevel=info
+    volumes:
+      - ./app:/workspace/app
+    environment:
+      - REDIS_URL=redis://redis:6379/0
+      - CELERY_BROKER_URL=redis://redis:6379/0
+      - CELERY_RESULT_BACKEND=redis://redis:6379/0
+    depends_on:
+      redis:
+        condition: service_healthy
+    networks:
+      - taskqueue_network
+
+  # Flower Dashboard Celery Real-time Monitoring
+  flower:
+    build: .
+    container_name: taskqueue_flower
+    command: celery -A app.workers.tasks.celery_app flower --port=5555
+    ports:
+      - "5555:5555"
+    environment:
+      - REDIS_URL=redis://redis:6379/0
+      - CELERY_BROKER_URL=redis://redis:6379/0
+      - CELERY_RESULT_BACKEND=redis://redis:6379/0
+    depends_on:
+      redis:
+        condition: service_healthy
+      worker:
+        condition: service_started
+    networks:
+      - taskqueue_network
+
+volumes:
+  redis_data:
+
+networks:
+  taskqueue_network:
+    driver: bridge
