@@ -1,0 +1,349 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ project_name }} — Distributed background job processing system</title>
+    <link rel="stylesheet" href="/static/css/main.css">
+</head>
+<body>
+
+    <!-- Floating Background Spotlights -->
+    <div class="spotlight-container">
+        <div class="spotlight-orange"></div>
+        <div class="spotlight-cyan"></div>
+    </div>
+
+    <!-- Header Navigation -->
+    <header class="glass-panel">
+        <div class="logo">
+            <div class="logo-dot"></div>
+            <span>TaskQueue</span>.io
+        </div>
+        <nav class="nav-links">
+            <button class="nav-link active" onclick="switchView('landing')">Product</button>
+            <button class="nav-link" onclick="switchView('dashboard')">Console Dashboard</button>
+            <button class="nav-link" onclick="switchView('timeline')">Queue Manager</button>
+            <button class="nav-link" onclick="switchView('raw')">Raw Redis Queue</button>
+        </nav>
+    </header>
+
+    <!-- Main Container -->
+    <main style="padding-bottom: 5rem;">
+
+        <!-- PAGE 1: LANDING PAGE -->
+        <section id="view-landing" class="view-section active">
+            <div class="landing-hero">
+                <div class="hero-pill">Now Powered by FastAPI & Celery</div>
+                <h1>The Smarter Way to <br><span>Scale Your Business Pipelines</span></h1>
+                <p>TaskQueue is a high-performance, portfolio-grade distributed background job processing system designed to handle heavy operations asynchronously. decalibrate latency, smooth transaction spikes, and isolate system failures.</p>
+                <div class="hero-buttons">
+                    <button class="btn-primary" onclick="switchView('dashboard')">Launch Interactive Console</button>
+                    <button class="btn-secondary" onclick="switchView('raw')">Raw Redis Comparison</button>
+                </div>
+            </div>
+
+            <!-- Dashboard Mock Showcase Widget -->
+            <div class="hero-dashboard-preview glass-panel">
+                <div class="mock-window-header">
+                    <div class="mock-dot red"></div>
+                    <div class="mock-dot yellow"></div>
+                    <div class="mock-dot green"></div>
+                    <span style="font-size: 0.75rem; color: var(--text-secondary); margin-left: 0.5rem;">taskqueue://dashboard.io (Active Context)</span>
+                </div>
+                <div class="mock-window-content">
+                    <div class="preview-left">
+                        <h3>Asynchronous Task Telemetry</h3>
+                        <p style="color: var(--text-secondary); font-size: 0.9rem; margin-bottom: 1rem;">Decoupled worker nodes process, downscale, compile and validate client workloads asynchronously.</p>
+                        
+                        <div class="mock-task-card">
+                            <div style="display: flex; align-items: center; gap: 0.75rem;">
+                                <div style="font-size: 1.25rem;">✉️</div>
+                                <div>
+                                    <div style="font-weight: 700; font-size: 0.9rem;">send_email_task</div>
+                                    <div style="font-size: 0.75rem; color: var(--text-secondary);">recipient: user@company.com</div>
+                                </div>
+                            </div>
+                            <span class="badge completed">Completed</span>
+                        </div>
+
+                        <div class="mock-task-card">
+                            <div style="display: flex; align-items: center; gap: 0.75rem;">
+                                <div style="font-size: 1.25rem;">🖼️</div>
+                                <div>
+                                    <div style="font-weight: 700; font-size: 0.9rem;">resize_image_task</div>
+                                    <div style="font-size: 0.75rem; color: var(--text-secondary);">thumbnail generation (800x600)</div>
+                                </div>
+                            </div>
+                            <span class="badge processing">Processing</span>
+                        </div>
+                    </div>
+                    
+                    <div style="display: flex; flex-direction: column; align-items: center; justify-content: center; background: #15161c; border-radius: 12px; padding: 1.5rem; text-align: center;">
+                        <div style="font-size: 2.25rem; font-weight: 800; color: var(--accent-orange);">4 Workers</div>
+                        <div style="font-size: 0.8rem; color: var(--text-secondary); text-transform: uppercase; margin-top: 0.25rem;">Auto-scaled Nodes</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Core Features -->
+            <div class="landing-features">
+                <div class="feature-card glass-panel">
+                    <div class="feature-icon">⚡</div>
+                    <h4>Decoupled Scaling</h4>
+                    <p>Web processes return response immediately. Heavy actions execute inside distributed Python nodes, preventing connection lockups.</p>
+                </div>
+                <div class="feature-card glass-panel">
+                    <div class="feature-icon">🔄</div>
+                    <h4>Real-time Monitoring</h4>
+                    <p>Integrates with Celery Beat and Flower Dashboard. Audit tasks, active nodes, execution queues, and failure histories in one click.</p>
+                </div>
+                <div class="feature-card glass-panel">
+                    <div class="feature-icon">🛡️</div>
+                    <h4>High Resilience</h4>
+                    <p>Automatic task retries with exponential backoffs. Failed workers isolate issues, keeping the front-facing API 100% online.</p>
+                </div>
+            </div>
+        </section>
+
+
+        <!-- PAGE 2: INTERACTIVE DASHBOARD VIEW -->
+        <section id="view-dashboard" class="view-section">
+            <div class="dashboard-grid">
+                
+                <!-- Left Panel: Job Creator Form -->
+                <div class="dashboard-panel glass-panel">
+                    <div class="card-title">
+                        <span>Submit Workload</span>
+                        <span style="font-size: 1.25rem;">🚀</span>
+                    </div>
+
+                    <!-- Job Selection Tabs -->
+                    <div class="job-selector-tabs">
+                        <button id="tab-send_email" class="tab-btn active" onclick="selectJobType('send_email')">Email</button>
+                        <button id="tab-resize_image" class="tab-btn" onclick="selectJobType('resize_image')">Image</button>
+                        <button id="tab-process_data" class="tab-btn" onclick="selectJobType('process_data')">Data</button>
+                        <button id="tab-generate_report" class="tab-btn" onclick="selectJobType('generate_report')">Report</button>
+                    </div>
+
+                    <!-- Dynamic Forms -->
+                    <form id="job-submission-form" onsubmit="handleFormSubmit(event)">
+                        <input type="hidden" id="input-job-type" value="send_email">
+
+                        <!-- Email Inputs -->
+                        <div id="form-fields-send_email" class="form-fields">
+                            <div class="form-group">
+                                <label for="email-to">Recipient Email *</label>
+                                <input type="email" id="email-to" value="developer@taskqueue.io" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="email-subject">Subject</label>
+                                <input type="text" id="email-subject" value="Background Task Succeeded!">
+                            </div>
+                            <div class="form-group">
+                                <label for="email-body">Email Body (Markdown)</label>
+                                <input type="text" id="email-body" value="Your distributed pipeline compiled this email inside worker nodes.">
+                            </div>
+                        </div>
+
+                        <!-- Image Resize Inputs -->
+                        <div id="form-fields-resize_image" class="form-fields" style="display: none;">
+                            <div class="form-group">
+                                <label for="img-url">Source Image URL</label>
+                                <input type="url" id="img-url" value="https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe">
+                            </div>
+                            <div class="form-group">
+                                <label for="img-width">Width (Pixels)</label>
+                                <input type="number" id="img-width" value="1200">
+                            </div>
+                            <div class="form-group">
+                                <label for="img-height">Height (Pixels)</label>
+                                <input type="number" id="img-height" value="800">
+                            </div>
+                        </div>
+
+                        <!-- Process Data Inputs -->
+                        <div id="form-fields-process_data" class="form-fields" style="display: none;">
+                            <div class="form-group">
+                                <label for="data-size">Dataset Ingestion Size</label>
+                                <input type="number" id="data-size" value="10000" min="10" max="100000">
+                            </div>
+                            <div class="form-group">
+                                <label for="data-source">Simulated Source</label>
+                                <select id="data-source">
+                                    <option value="postgresql">PostgreSQL Analytics Ingestion</option>
+                                    <option value="mongodb">MongoDB JSON Stream</option>
+                                    <option value="s3">S3 CSV Buffer</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <!-- Report PDF Inputs -->
+                        <div id="form-fields-generate_report" class="form-fields" style="display: none;">
+                            <div class="form-group">
+                                <label for="report-id">Document Unique ID</label>
+                                <input type="text" id="report-id" value="REPORT-2026-WK5" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="report-format">Export Format</label>
+                                <select id="report-format">
+                                    <option value="pdf">Adobe PDF (.pdf)</option>
+                                    <option value="xlsx">Excel Sheet (.xlsx)</option>
+                                    <option value="csv">CSV Buffer (.csv)</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <button type="submit" class="btn-primary" style="width: 100%; margin-top: 1.5rem;">Dispatch Job to Redis</button>
+                    </form>
+                </div>
+
+                <!-- Center Panel: Analytics Telemetry -->
+                <div class="dashboard-panel glass-panel" style="background: rgba(22, 24, 32, 0.45);">
+                    <div class="card-title">
+                        <span>Pipeline Telemetry Analytics</span>
+                        <span style="font-size: 0.8rem; color: var(--accent-green); background: rgba(43,208,112,0.1); padding: 0.25rem 0.5rem; border-radius: 6px;">Live Polling</span>
+                    </div>
+
+                    <!-- Statistics Summary Grid -->
+                    <div class="stats-summary-grid">
+                        <div class="stat-widget glass-panel">
+                            <div class="stat-value orange" id="stat-total-jobs">0</div>
+                            <div class="stat-label">Total Jobs</div>
+                        </div>
+                        <div class="stat-widget glass-panel">
+                            <div class="stat-value green" id="stat-completed-jobs">0</div>
+                            <div class="stat-label">Success Rate</div>
+                        </div>
+                        <div class="stat-widget glass-panel">
+                            <div class="stat-value cyan" id="stat-active-jobs">0</div>
+                            <div class="stat-label">Active Jobs</div>
+                        </div>
+                    </div>
+
+                    <!-- SVG Gauges and Charts -->
+                    <div class="interactive-telemetry">
+                        
+                        <!-- circular progress ring -->
+                        <div class="telemetry-card glass-panel">
+                            <h4 style="font-size: 0.85rem; color: var(--text-secondary); text-transform: uppercase; margin-bottom: 1rem;">Total Throughput</h4>
+                            <div class="progress-ring-container">
+                                <svg width="150" height="150">
+                                    <circle stroke="rgba(255,255,255,0.05)" stroke-width="8" fill="transparent" r="60" cx="75" cy="75"/>
+                                    <circle id="gauge-circle" class="progress-ring-circle" stroke="var(--accent-orange)" stroke-width="8" stroke-dasharray="376.99" stroke-dashoffset="376.99" fill="transparent" r="60" cx="75" cy="75"/>
+                                </svg>
+                                <div class="ring-value-text" id="gauge-percentage-text">
+                                    0%
+                                    <span>Success</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Processing Latency Card -->
+                        <div class="telemetry-card glass-panel" style="align-items: flex-start; justify-content: space-between; text-align: left; padding: 1.5rem;">
+                            <div>
+                                <h4 style="font-size: 0.85rem; color: var(--text-secondary); text-transform: uppercase; margin-bottom: 0.5rem;">Average Latency</h4>
+                                <div style="font-size: 2.25rem; font-weight: 800; color: var(--accent-cyan);">2.8s</div>
+                                <p style="font-size: 0.75rem; color: var(--text-secondary); margin-top: 0.25rem;">Includes dynamic serialization + artificial SMTP delays</p>
+                            </div>
+                            <div style="width: 100%; border-top: 1px solid var(--border-glass); padding-top: 0.75rem; font-size: 0.8rem; color: var(--accent-green); display: flex; align-items: center; gap: 0.35rem;">
+                                <span class="logo-dot" style="background-color: var(--accent-green); box-shadow: 0 0 8px var(--accent-green);"></span>
+                                Celery workers responsive
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Monospaced logs box -->
+                    <div class="console-logs-widget">
+                        <div style="font-size: 0.75rem; color: var(--text-secondary); border-bottom: 1px solid var(--border-glass); padding-bottom: 0.35rem; font-weight: 700; display: flex; justify-content: space-between;">
+                            <span>LIVE WORKER LOGSTREAM</span>
+                            <span style="color: #6d28d9;">Celery Node-1</span>
+                        </div>
+                        <div class="logs-output" id="logs-terminal">
+                            <div class="log-line info">[INFO] Initializing distributed background loop client.</div>
+                            <div class="log-line info">[INFO] Connected to queue broker: redis://localhost:6379/0</div>
+                            <div class="log-line success">[SUCCESS] Workers online, waiting for workloads...</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Right Panel: Small Job Queue list -->
+                <div class="dashboard-panel glass-panel">
+                    <div class="card-title">
+                        <span>Active Queue</span>
+                        <span style="font-size: 0.8rem; color: var(--text-secondary);" id="queue-counter">0 Jobs</span>
+                    </div>
+
+                    <!-- active tasks feed -->
+                    <div class="tasks-sidebar-list" id="active-tasks-list">
+                        <!-- Filled by JS -->
+                        <div style="text-align: center; color: var(--text-secondary); padding: 4rem 1rem; font-size: 0.9rem;">
+                            No active tasks running.<br>Use the console on the left to submit a job!
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+
+        <!-- PAGE 3: QUEUE TIMELINE VIEW -->
+        <section id="view-timeline" class="view-section">
+            <div class="timeline-container">
+                <div class="timeline-controls-bar">
+                    <div class="timeline-title-area">
+                        <h2>Queue Manager & Detailed Auditing</h2>
+                        <p style="color: var(--text-secondary); font-size: 0.9rem; margin-top: 0.25rem;">Expand any background task item to audit input payloads and final returned worker outputs.</p>
+                    </div>
+                    <button class="btn-secondary" style="padding: 0.6rem 1.25rem;" onclick="clearAllHistoricalTasks()">Flush Logs</button>
+                </div>
+
+                <!-- Timeline Feed -->
+                <div class="timeline-list" id="historical-timeline-list">
+                    <!-- Dynamic rendering by JS -->
+                    <div class="glass-panel" style="padding: 4rem; text-align: center; color: var(--text-secondary);">
+                        <div style="font-size: 2rem; margin-bottom: 1rem;">📥</div>
+                        <h4>No Job Submissions Registered</h4>
+                        <p style="font-size: 0.9rem; margin-top: 0.5rem; max-width: 400px; margin-left: auto; margin-right: auto;">Go to the "Console Dashboard" tab and submit standard email, resizing or report generation jobs to populate this registry.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        
+        <!-- PAGE 4: RAW REDIS DEMO & EDUCATIONAL VIEW -->
+        <section id="view-raw" class="view-section">
+            <div class="raw-demo-container">
+                <div class="timeline-title-area" style="text-align: center; margin-bottom: 3rem;">
+                    <h2>Raw Redis Queuing Mechanics</h2>
+                    <p style="color: var(--text-secondary); font-size: 1rem; margin-top: 0.5rem;">A lightweight alternative bypassing Celery using atomic LPUSH & BLPOP instructions.</p>
+                </div>
+
+                <div class="raw-flow-card glass-panel">
+                    <h3>How it Works</h3>
+                    <p style="color: var(--text-secondary); line-height: 1.6; margin-top: 0.5rem;">Unlike Celery, which packs a heavy abstraction layer, a raw queue relies entirely on Redis native lists. Producers append to lists using LPUSH, and workers subscribe and sleep on socket connections using blocking BLPOP operations.</p>
+                    
+                    <div class="raw-flow-diagram">
+                        [FastAPI Producer] --(LPUSH)--> [ Redis List: raw_queue:jobs ] <--(BLPOP)-- [Raw Python Worker]
+                    </div>
+
+                    <h4 style="margin-top: 1.5rem; margin-bottom: 0.5rem;">Test it locally</h4>
+                    <p style="color: var(--text-secondary); font-size: 0.9rem; line-height: 1.5;">To test the lightweight Raw Redis comparison queues, open two command prompt windows in your local workspace and execute:</p>
+                    
+                    <div class="json-block-container" style="margin-top: 1rem;">
+                        <h5>Terminal A: Launch the Consumer Worker</h5>
+                        <pre class="json-block">python raw_redis/worker.py</pre>
+                    </div>
+
+                    <div class="json-block-container" style="margin-top: 1rem;">
+                        <h5>Terminal B: Submit Jobs via Producer Client</h5>
+                        <pre class="json-block">python raw_redis/client.py</pre>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <script src="/static/js/app.js"></script>
+</body>
+</html>
